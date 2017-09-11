@@ -11,6 +11,12 @@ namespace bp = boost::python;
 #include <string>
 #include <vector>
 
+#if _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#endif
+
 #include "boost/algorithm/string.hpp"
 #include "caffe/caffe.hpp"
 #include "caffe/util/signal_handler.h"
@@ -289,6 +295,13 @@ int test() {
   caffe_net.CopyTrainedLayersFrom(FLAGS_weights);
   LOG(INFO) << "Running for " << FLAGS_iterations << " iterations.";
 
+#if _WIN32
+  CreateDirectory("caffe_local_output", NULL);
+#else
+  struct stat st = {0};
+  if (stat("caffe_local_output", &st) == -1) { mkdir("caffe_local_output", 0700); }
+#endif
+
   vector<int> test_score_output_id;
   vector<float> test_score;
   float loss = 0;
@@ -298,8 +311,16 @@ int test() {
         caffe_net.Forward(&iter_loss);
     loss += iter_loss;
     int idx = 0;
+
+    FILE * fp_b = fopen("caffe_local_output/output.f32", "wb");
     for (int j = 0; j < result.size(); ++j) {
       const float* result_vec = result[j]->cpu_data();
+
+      if(j == 1){
+        printf("KIRITI-Caffe: WRITING %d entries\n", result[j]->count());
+        fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
+      }
+      
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
         if (i == 0) {
@@ -313,6 +334,7 @@ int test() {
         LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
       }
     }
+    fclose(fp_b);
   }
   loss /= FLAGS_iterations;
   LOG(INFO) << "Loss: " << loss;

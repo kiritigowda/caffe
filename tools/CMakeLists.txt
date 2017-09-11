@@ -19,6 +19,8 @@ foreach(source ${srcs})
   caffe_set_runtime_directory(${name} "${PROJECT_BINARY_DIR}/tools")
   caffe_set_solution_folder(${name} tools)
 
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2 -std=c++11")
+
   # restore output name without suffix
   if(name MATCHES "caffe.bin")
     set_target_properties(${name} PROPERTIES OUTPUT_NAME caffe)
