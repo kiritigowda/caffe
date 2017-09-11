@@ -316,7 +316,7 @@ int test() {
     for (int j = 0; j < result.size(); ++j) {
       const float* result_vec = result[j]->cpu_data();
 
-      if(j == 1){
+      if(j == 0){
         printf("KIRITI-Caffe: WRITING %d entries\n", result[j]->count());
         fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
       }
