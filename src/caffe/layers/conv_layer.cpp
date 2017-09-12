@@ -2,6 +2,28 @@
 
 #include "caffe/layers/conv_layer.hpp"
 
+void kiriti_dumpBuffer(void* buf, size_t numElements, std::string layername, std::string path)
+{
+    // Replace '/' to '_' in the layername
+    std::string fileName = layername;
+    size_t start_pos = 0;
+    while ((start_pos = fileName.find("/", start_pos)) != std::string::npos) {
+        fileName.replace(start_pos, 1, "_");
+        start_pos += 1; // Handles case where 'to' is a substring of 'from'
+    }
+    fileName = path + fileName + ".f32";
+    printf("Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
+
+    FILE * fp = fopen(fileName.c_str(), "wb");
+    if(!fp) printf("Could not open file %s\n", fileName.c_str());
+    else
+    {
+        printf("Writing file %s\n", fileName.c_str());
+        fwrite(buf, sizeof(float), numElements, fp);
+    }
+    fclose(fp);
+}
+
 namespace caffe {
 
 template <typename Dtype>
@@ -37,6 +59,17 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
   }
+#if KIRITI_DUMP_BUFFERS
+  if(this->layer_param().name() == "conv1_1"){
+#if _WIN32
+    CreateDirectory("caffe_local_output", NULL);
+#else
+    struct stat st = {0};
+    if (stat("caffe_local_output", &st) == -1) { mkdir("caffe_local_output", 0700); }
+#endif
+    kiriti_dumpBuffer(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffe_local_output/");
+  }
+#endif
 }
 
 template <typename Dtype>

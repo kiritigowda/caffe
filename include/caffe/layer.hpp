@@ -11,6 +11,13 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/math_functions.hpp"
 
+#define KIRITI_DUMP_BUFFERS 1
+#if _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#endif
+
 /**
  Forward declare boost::thread instead of including boost/thread.hpp
  to avoid a boost/NVCC issues (#1009, #1010) on OSX.
