@@ -320,7 +320,7 @@ int test() {
       {
           fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
       }
-      printf("CAFFE_LOCAL_TEST: WRITING %d entries\n", result[j]->count());
+      printf("CAFFE_LOCAL_TEST: WRITING %d entries in caffe_local_output/output.f32\n", result[j]->count());
 
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
@@ -332,7 +332,7 @@ int test() {
         }
         const std::string& output_name = caffe_net.blob_names()[
             caffe_net.output_blob_indices()[j]];
-        LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
+        //LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
       }
     }
     fclose(fp_b);
@@ -351,7 +351,7 @@ int test() {
       loss_msg_stream << " (* " << loss_weight
                       << " = " << loss_weight * mean_score << " loss)";
     }
-    LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
+    //LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
   }
 
   return 0;
