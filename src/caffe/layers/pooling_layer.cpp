@@ -5,8 +5,6 @@
 #include "caffe/layers/pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
-namespace caffe {
-
 void caffe_test_dumpBuffer_pool(void* buf, size_t numElements, std::string layername, std::string path)
 {
     // Replace '/' to '_' in the layername
@@ -17,17 +15,19 @@ void caffe_test_dumpBuffer_pool(void* buf, size_t numElements, std::string layer
         start_pos += 1; // Handles case where 'to' is a substring of 'from'
     }
     fileName = path + fileName + ".f32";
-    printf("CAFFE_LOCAL_TEST: Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
+    printf("CAFFE POOLING WRITE: Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
 
     FILE * fp = fopen(fileName.c_str(), "wb");
     if(!fp) printf("Could not open file %s\n", fileName.c_str());
     else
     {
-        printf("CAFFE_LOCAL_TEST: Writing file %s into caffe_local_output folder\n", fileName.c_str());
+        printf("CAFFE POOLING WRITE: Writing file %s into caffe_local_output folder\n", fileName.c_str());
         fwrite(buf, sizeof(float), numElements, fp);
     }
     fclose(fp);
 }
+
+namespace caffe {
 
 using std::min;
 using std::max;
@@ -246,6 +246,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   default:
     LOG(FATAL) << "Unknown pooling method.";
   }
+/*DUMP LAYER BUFFER*/
 #if CAFFE_BUFFER_DUMP
 #if _WIN32
   CreateDirectory("caffe_local_output", NULL);

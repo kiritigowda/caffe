@@ -13,13 +13,13 @@ void caffe_test_dumpBuffer_conv(void* buf, size_t numElements, std::string layer
         start_pos += 1; // Handles case where 'to' is a substring of 'from'
     }
     fileName = path + fileName + ".f32";
-    printf("CAFFE_LOCAL_TEST: Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
+    printf("CAFFE CONV WRITE:: Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
 
     FILE * fp = fopen(fileName.c_str(), "wb");
     if(!fp) printf("Could not open file %s\n", fileName.c_str());
     else
     {
-        printf("CAFFE_LOCAL_TEST: Writing file %s into caffe_local_output folder\n", fileName.c_str());
+        printf("CAFFE CONV WRITE:: Writing file %s into caffe_local_output folder\n", fileName.c_str());
         fwrite(buf, sizeof(float), numElements, fp);
     }
     fclose(fp);
@@ -60,6 +60,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
   }
+/*DUMP LAYER BUFFER*/
 #if CAFFE_BUFFER_DUMP
 #if _WIN32
   CreateDirectory("caffe_local_output", NULL);
