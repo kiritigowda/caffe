@@ -267,7 +267,6 @@ int train() {
 }
 RegisterBrewFunction(train);
 
-
 // Test: score a model.
 int test() {
   CHECK_GT(FLAGS_model.size(), 0) << "Need a model definition to score.";
@@ -313,14 +312,16 @@ int test() {
     int idx = 0;
 
     FILE * fp_b = fopen("caffe_local_output/output.f32", "wb");
+    if(fp_b == NULL){printf("ERROR:: unable to create file output.f32");}
+
     for (int j = 0; j < result.size(); ++j) {
       const float* result_vec = result[j]->cpu_data();
-
-      if(j == 0){
-        printf("KIRITI-Caffe: WRITING %d entries\n", result[j]->count());
-        fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
+      if(j == 0)
+      {
+          fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
       }
-      
+      printf("CAFFE_LOCAL_TEST: WRITING %d entries\n", result[j]->count());
+
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
         if (i == 0) {
@@ -336,6 +337,7 @@ int test() {
     }
     fclose(fp_b);
   }
+
   loss /= FLAGS_iterations;
   LOG(INFO) << "Loss: " << loss;
   for (int i = 0; i < test_score.size(); ++i) {
