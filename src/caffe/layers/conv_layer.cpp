@@ -3,7 +3,7 @@
 #include "caffe/layers/conv_layer.hpp"
 #include<stdio.h>
 
-void caffe_test_dumpBuffer(void* buf, size_t numElements, std::string layername, std::string path)
+void caffe_test_dumpBuffer_conv(void* buf, size_t numElements, std::string layername, std::string path)
 {
     // Replace '/' to '_' in the layername
     std::string fileName = layername;
@@ -67,8 +67,8 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   struct stat st = {0};
 if (stat("caffe_local_output", &st) == -1) { mkdir("caffe_local_output", 0700); }
 #endif
-  if(this->layer_param().name() == "conv1_1")
-    caffe_test_dumpBuffer(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffe_local_output/");
+  //if(this->layer_param().name() == "conv1_1")
+    caffe_test_dumpBuffer_conv(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffe_local_output/");
 #endif
 }
 
