@@ -21,7 +21,7 @@ void caffe_test_dumpBuffer_pool(void* buf, size_t numElements, std::string layer
     if(!fp) printf("Could not open file %s\n", fileName.c_str());
     else
     {
-        printf("CAFFE POOLING WRITE: Writing file %s into caffe_local_output folder\n", fileName.c_str());
+        printf("CAFFE POOLING WRITE: Writing file %s into caffeBufferDump folder\n", fileName.c_str());
         fwrite(buf, sizeof(float), numElements, fp);
     }
     fclose(fp);
@@ -249,13 +249,13 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 /*DUMP LAYER BUFFER*/
 #if CAFFE_BUFFER_DUMP
 #if _WIN32
-  CreateDirectory("caffe_local_output", NULL);
+  CreateDirectory("caffeBufferDump", NULL);
 #else
   struct stat st = {0};
-if (stat("caffe_local_output", &st) == -1) { mkdir("caffe_local_output", 0700); }
+if (stat("caffeBufferDump", &st) == -1) { mkdir("caffeBufferDump", 0700); }
 #endif
 //if(this->layer_param().name() == "pool1")
-  caffe_test_dumpBuffer_pool(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffe_local_output/");
+  caffe_test_dumpBuffer_pool(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
 #endif
 }
 

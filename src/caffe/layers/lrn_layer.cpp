@@ -4,6 +4,27 @@
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
+void ash_dumpBuffer_lrn(void* buf, size_t numElements, std::string layername, std::string path)
+{
+    // Replace '/' to '_' in the layername
+    std::string fileName = layername;
+    size_t start_pos = 0;
+    while ((start_pos = fileName.find("/", start_pos)) != std::string::npos) {
+        fileName.replace(start_pos, 1, "_");
+        start_pos += 1; // Handles case where 'to' is a substring of 'from'
+    }
+    fileName = path + fileName + ".f32";
+    printf("Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
+
+    FILE * fp = fopen(fileName.c_str(), "wb");
+    if(!fp) printf("Could not open file %s\n", fileName.c_str());
+    else
+    {
+        printf("Writing file %s\n", fileName.c_str());
+        fwrite(buf, sizeof(float), numElements, fp);
+    }
+    fclose(fp);
+}
 
 template <typename Dtype>
 void LRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
@@ -102,6 +123,9 @@ void LRNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   default:
     LOG(FATAL) << "Unknown normalization region.";
   }
+#if ASH_DUMP
+  ash_dumpBuffer_lrn(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "/home/ashish/work/dmnet-verif/zdump_caffe/");
+#endif
 }
 
 template <typename Dtype>

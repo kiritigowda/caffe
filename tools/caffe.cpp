@@ -295,10 +295,10 @@ int test() {
   LOG(INFO) << "Running for " << FLAGS_iterations << " iterations.";
 
 #if _WIN32
-  CreateDirectory("caffe_local_output", NULL);
+  CreateDirectory("caffeBufferDump", NULL);
 #else
   struct stat st = {0};
-  if (stat("caffe_local_output", &st) == -1) { mkdir("caffe_local_output", 0700); }
+  if (stat("caffeBufferDump", &st) == -1) { mkdir("caffeBufferDump", 0700); }
 #endif
 
   vector<int> test_score_output_id;
@@ -311,7 +311,7 @@ int test() {
     loss += iter_loss;
     int idx = 0;
 
-    FILE * fp_b = fopen("caffe_local_output/output.f32", "wb");
+    FILE * fp_b = fopen("caffeBufferDump/output.f32", "wb");
     if(fp_b == NULL){printf("ERROR:: unable to create file output.f32");}
 
     for (int j = 0; j < result.size(); ++j) {
@@ -320,7 +320,7 @@ int test() {
       {
           fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
       }
-      printf("CAFFE_LOCAL_TEST: WRITING %d entries in caffe_local_output/output.f32\n", result[j]->count());
+      printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/output.f32\n", result[j]->count());
 
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
