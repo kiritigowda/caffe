@@ -311,16 +311,17 @@ int test() {
     loss += iter_loss;
     int idx = 0;
 
-    FILE * fp_b = fopen("caffeBufferDump/output.f32", "wb");
-    if(fp_b == NULL){printf("ERROR:: unable to create file output.f32");}
+    FILE * fp_b = fopen("caffeBufferDump/caffe-output.f32", "wb");
+    if(fp_b == NULL){printf("ERROR:: unable to create file caffe-output.f32");}
 
     for (int j = 0; j < result.size(); ++j) {
       const float* result_vec = result[j]->cpu_data();
-      if(j == 0)
+
+      if(j == 1)
       {
           fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
-      }
-      printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/output.f32\n", result[j]->count());
+          printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/caffe-output.f32\n", result[j]->count());
+      }    
 
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];

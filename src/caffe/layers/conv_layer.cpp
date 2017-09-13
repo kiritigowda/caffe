@@ -3,6 +3,28 @@
 #include "caffe/layers/conv_layer.hpp"
 #include<stdio.h>
 
+void caffe_test_dumpBuffer_input(const void* buf, size_t numElements, std::string layername, std::string path)
+{
+    // Replace '/' to '_' in the layername
+    std::string fileName = layername;
+    size_t start_pos = 0;
+    while ((start_pos = fileName.find("/", start_pos)) != std::string::npos) {
+        fileName.replace(start_pos, 1, "_");
+        start_pos += 1; // Handles case where 'to' is a substring of 'from'
+    }
+    fileName = path + fileName + ".f32";
+    printf("CAFFE CONV WRITE:: Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
+
+    FILE * fp = fopen(fileName.c_str(), "wb");
+    if(!fp) printf("Could not open file %s\n", fileName.c_str());
+    else
+    {
+        printf("CAFFE CONV WRITE:: Writing file %s into caffeBufferDump folder\n", fileName.c_str());
+        fwrite(buf, sizeof(float), numElements, fp);
+    }
+    fclose(fp);
+}
+
 void caffe_test_dumpBuffer_conv(void* buf, size_t numElements, std::string layername, std::string path)
 {
     // Replace '/' to '_' in the layername
@@ -68,6 +90,9 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   struct stat st = {0};
 if (stat("caffeBufferDump", &st) == -1) { mkdir("caffeBufferDump", 0700); }
 #endif
+  if(this->layer_param().name() == "conv1_1")
+    caffe_test_dumpBuffer_input(bottom[0]->cpu_data(), bottom[0]->count(), "caffe_input_data", "caffeBufferDump/");   
+
   //if(this->layer_param().name() == "conv1_1")
     caffe_test_dumpBuffer_conv(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
 #endif
