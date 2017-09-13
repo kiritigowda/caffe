@@ -1,0 +1,1 @@
+/home/kiriti/nn/build/caffe/vggnet/input.png
