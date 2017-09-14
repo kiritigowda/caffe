@@ -12,6 +12,12 @@ namespace bp = boost::python;
 #include <string>
 #include <vector>
 
+#if _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#endif
+
 #include "boost/algorithm/string.hpp"
 #include "caffe/caffe.hpp"
 #include "caffe/device.hpp"
@@ -323,6 +329,13 @@ int test() {
   caffe_net.CopyTrainedLayersFrom(FLAGS_weights);
   LOG(INFO) << "Running for " << FLAGS_iterations << " iterations.";
 
+#if _WIN32
+  CreateDirectory("caffeBufferDump", NULL);
+#else
+  struct stat st = {0};
+  if (stat("caffeBufferDump", &st) == -1) { mkdir("caffeBufferDump", 0700); }
+#endif
+
   vector<int> test_score_output_id;
   vector<float> test_score;
   float loss = 0;
@@ -332,8 +345,26 @@ int test() {
         caffe_net.Forward(&iter_loss);
     loss += iter_loss;
     int_tp idx = 0;
+
+    FILE * fp_b = fopen("caffeBufferDump/caffe-output.f32", "wb");
+    if(fp_b == NULL){printf("ERROR:: unable to create file caffe-output.f32");}
+
     for (int_tp j = 0; j < result.size(); ++j) {
       const float* result_vec = result[j]->cpu_data();
+
+      if(j == 1)
+      {
+          fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
+          printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/caffe-output.f32\n", result[j]->count());
+      }    
+
+      //print labels
+      char * line = NULL;
+      size_t len = 0;
+      FILE * fp_l = fopen("labels.txt", "r");
+      if(fp_l == NULL){printf("CAFFE Label.txt file missing\n");}
+
+
       for (int_tp k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
         if (i == 0) {
@@ -344,9 +375,15 @@ int test() {
         }
         const std::string& output_name = caffe_net.blob_names()[
             caffe_net.output_blob_indices()[j]];
-        LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
+        //LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
+        if((getline(&line, &len, fp_l)) != -1) {
+          if(score > 0.02)
+        printf("%.4f -- %s ",score, line);
+        }
       }
+      fclose(fp_l);
     }
+    fclose(fp_b);
   }
   loss /= FLAGS_iterations;
   LOG(INFO) << "Loss: " << loss;
@@ -361,7 +398,7 @@ int test() {
       loss_msg_stream << " (* " << loss_weight
                       << " = " << loss_weight * mean_score << " loss)";
     }
-    LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
+    //LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
   }
 #ifdef USE_GREENTEA
   if (Caffe::GetDefaultDevice()->backend() == caffe::BACKEND_OpenCL) {
