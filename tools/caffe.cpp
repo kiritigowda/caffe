@@ -341,9 +341,9 @@ int test() {
             caffe_net.output_blob_indices()[j]];
         //LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
         
-        if(( fp_l != NULL && getline(&line, &len, fp_l)) != -1) {
+        if( (fp_l != NULL) && (getline(&line, &len, fp_l) != -1) ) {
           if(score >= 0.01)
-            printf("%.4f -- %s ",score, line);
+            printf("Output Classification -- %.4f percent -- %s ",score*100, line);
         }
       }
       fclose(fp_l);
