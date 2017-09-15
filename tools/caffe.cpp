@@ -323,6 +323,12 @@ int test() {
           printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/caffe-output.f32\n", result[j]->count());
       }    
 
+      //print labels
+      char * line = NULL;
+      size_t len = 0;
+      FILE * fp_l = fopen("labels.txt", "r");
+      if(fp_l == NULL){printf("CAFFE Label.txt file missing\n");}
+
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
         if (i == 0) {
@@ -334,7 +340,13 @@ int test() {
         const std::string& output_name = caffe_net.blob_names()[
             caffe_net.output_blob_indices()[j]];
         //LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
+        
+        if(( fp_l != NULL && getline(&line, &len, fp_l)) != -1) {
+          if(score >= 0.01)
+            printf("%.4f -- %s ",score, line);
+        }
       }
+      fclose(fp_l);
     }
     fclose(fp_b);
   }

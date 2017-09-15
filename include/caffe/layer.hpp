@@ -11,7 +11,7 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/math_functions.hpp"
 
-#define CAFFE_BUFFER_DUMP 1
+#define CAFFE_BUFFER_DUMP 0
 #if _WIN32
 #include <windows.h>
 #else
