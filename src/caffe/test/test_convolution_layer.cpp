@@ -14,6 +14,17 @@
 #include "caffe/test/test_caffe_main.hpp"
 #include "caffe/test/test_gradient_check_util.hpp"
 
+#if _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#endif
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
+static int convTestNum = 1;
+
 namespace caffe {
 
 // Reference convolution for checking results:
@@ -64,7 +75,106 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
   int o_g = out->shape(1) / groups;
   int k_g = in->shape(1) / groups;
   int o_head, k_head;
-  // Convolution
+
+  //test stats
+#if _WIN32
+  CreateDirectory("caffe_ConvUnitTest", NULL);
+#else
+  struct stat st = {0};
+  if (stat("caffe_ConvUnitTest", &st) == -1) { mkdir("caffe_ConvUnitTest", 0700); }
+#endif
+
+  // input dump
+#if _WIN32
+  CreateDirectory("caffe_ConvUnitTest/input", NULL);
+#else
+  struct stat st_i = {0};
+  if (stat("caffe_ConvUnitTest/input", &st_i) == -1) { mkdir("caffe_ConvUnitTest/input", 0700); }
+#endif
+  char ip_fileName[1024]; sprintf(ip_fileName, "caffe_ConvUnitTest/input/caffe-conv-input-%d.f32", convTestNum);
+  FILE * fp_i = fopen(ip_fileName, "wb");
+  if(fp_i == NULL){printf("ERROR:: unable to create file %s", ip_fileName);}
+  fwrite(in, sizeof(float), in[0].count(), fp_i);
+  //printf("CAFFE-TEST Input DUMP: WRITING %d entries in %s\n",in[0].count(), ip_fileName);
+  fclose(fp_i);
+
+  // check conv sizes
+  int n = in->shape(0), c = in->shape(1), H = in->shape(2), W = in->shape(3);
+  int k = c, h = H, w = W;
+  if (n < 1 || c < 1 || H < 1 || W < 1)
+   printf("calculateTensorDim: got invalid dim %dx%dx%dx%d for %s\n", n, c, H, W, ip_fileName);
+
+  w = ((W + 2 * pad_w - kernel_w - (kernel_w - 1) * (dilation_w - 1)) / stride_w) + 1;
+  h = ((H + 2 * pad_h - kernel_h - (kernel_h - 1) * (dilation_h - 1)) / stride_h) + 1;
+
+  int weights_dump_size = kernel_w * kernel_h * c * k;
+
+  const Dtype* weight_data = weights[0]->cpu_data();
+  const Dtype* bias_data = weights[1]->cpu_data();
+
+  // weight dump
+#if _WIN32
+  CreateDirectory("caffe_ConvUnitTest/weights", NULL);
+#else
+  struct stat st_w = {0};
+  if (stat("caffe_ConvUnitTest/weights", &st_w) == -1) { mkdir("caffe_ConvUnitTest/weights", 0700); }
+#endif
+  char w_fileName[1024]; sprintf(w_fileName, "caffe_ConvUnitTest/weights/caffe-conv-weight-%d.f32", convTestNum);
+  FILE * fp_w = fopen(w_fileName, "wb");
+  if(fp_w == NULL){printf("ERROR:: unable to create file %s", w_fileName);}
+  fwrite(weight_data, sizeof(float),  weights_dump_size, fp_w);
+  //printf("CAFFE-TEST Input DUMP: WRITING %d entries in %s\n",(int)weights.size(), w_fileName);
+  fclose(fp_w);
+
+  // bias dump
+#if _WIN32
+  CreateDirectory("caffe_ConvUnitTest/bias", NULL);
+#else
+  struct stat st_b = {0};
+  if (stat("caffe_ConvUnitTest/bias", &st_b) == -1) { mkdir("caffe_ConvUnitTest/bias", 0700); }
+#endif
+  char b_fileName[1024]; sprintf(b_fileName, "caffe_ConvUnitTest/bias/caffe-conv-bias-%d.f32", convTestNum);
+  FILE * fp_b = fopen(b_fileName, "wb");
+  if(fp_b == NULL){printf("ERROR:: unable to create file %s", b_fileName);}
+  fwrite(bias_data, sizeof(float),k, fp_b);
+  //printf("CAFFE-TEST Input DUMP: WRITING %d entries in %s\n",(int)weights.size(), b_fileName);
+  fclose(fp_b);
+
+  // dump GDF
+  char gdf_fileName[1024]; sprintf(gdf_fileName, "caffe_ConvUnitTest/caffeConvUnitTest-%d.gdf", convTestNum);
+  std::ofstream ofsGDF(gdf_fileName, std::ios::binary);
+  ofsGDF << "import vx_nn" << std::endl;
+  ofsGDF << std::endl;
+  ofsGDF << "data " << "input" << " = tensor:4,{" << W << "," << H << ","
+         << c << "," << n << "}," << "VX_TYPE_FLOAT32" << "," << 0 << std::endl;
+  ofsGDF << "read input " << "input/caffe-conv-input-"<< convTestNum <<".f32"<< std::endl;
+  ofsGDF << std::endl;
+  ofsGDF << "data " << "conv_out_"<< convTestNum << " = tensor:4,{" << w << ","
+         << h << "," << k << "," << out->shape(0) << "}," << "VX_TYPE_FLOAT32" << "," << 0 << std::endl;
+
+  ofsGDF << "data " << "weight_"<< convTestNum << " = tensor:4,{" << kernel_w << ","
+         << kernel_h << "," << c << "," << k << "}," << "VX_TYPE_FLOAT32" << "," << 0 << std::endl;
+  ofsGDF << "init " << "weight_"<< convTestNum << " weights/caffe-conv-weight-" << convTestNum << ".f32" << std::endl;
+
+  ofsGDF << "data " << "bias_"<< convTestNum << " = tensor:1,{" << k << "}," << "VX_TYPE_FLOAT32"  << "," << 0 << std::endl;
+  ofsGDF << "init " << "bias_"<< convTestNum << " bias/caffe-conv-bias-" << convTestNum << ".f32" << std::endl;
+
+  ofsGDF << "data " << "conv_"<< convTestNum << "_params = " << " scalar:VX_TYPE_NN_CONV_PARAMS,{" << pad_w << "," << pad_h << "," <<
+            "VX_CONVERT_POLICY_SATURATE" << "," << "VX_ROUND_POLICY_TO_NEAREST_EVEN" << ",VX_NN_DS_SIZE_ROUNDING_FLOOR," << dilation_w-1
+            << "," << dilation_h-1 << "}" << std::endl;
+
+  ofsGDF << "node org.khronos.nn_extension.convolution_layer "
+                    << "input" << " "
+                    << "weight_"<< convTestNum << " "
+                    << "bias_"<< convTestNum << " "
+                    << "conv_"<< convTestNum << "_params "
+                    << "conv_out_"<< convTestNum
+                    << std::endl;
+  ofsGDF << std::endl;
+
+  ofsGDF << "compare conv_out_" << convTestNum << " output/caffe-conv-output-" << convTestNum<< ".f32"<<std::endl;
+
+   // Convolution
   vector<int> weight_offset(4 + has_depth);
   vector<int> in_offset(4 + has_depth);
   vector<int> out_offset(4 + has_depth);
@@ -136,6 +246,22 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
       }
     }
   }
+
+  // output dump
+#if _WIN32
+  CreateDirectory("caffe_ConvUnitTest/output", NULL);
+#else
+  struct stat st_o = {0};
+  if (stat("caffe_ConvUnitTest/output", &st_o) == -1) { mkdir("caffe_ConvUnitTest/output", 0700); }
+#endif
+  char op_fileName[1024]; sprintf(op_fileName, "caffe_ConvUnitTest/output/caffe-conv-output-%d.f32", convTestNum);
+  FILE * fp_o = fopen(op_fileName, "wb");
+  if(fp_o == NULL){printf("ERROR:: unable to create file %s", op_fileName);}
+  fwrite(out, sizeof(float), out[0].count(), fp_o);
+  //printf("CAFFE-TEST output DUMP: WRITING %d entries in %s\n",out[0].count(), op_fileName);
+  fclose(fp_o);
+
+  convTestNum++;
 }
 
 template void caffe_conv(const Blob<float>* in,
