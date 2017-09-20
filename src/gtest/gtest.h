@@ -54,6 +54,12 @@
 #include <limits>
 #include <vector>
 
+#if _WIN32
+#include <windows.h>
+#else
+#include <sys/stat.h>
+#endif
+
 // Copyright 2005, Google Inc.
 // All rights reserved.
 //

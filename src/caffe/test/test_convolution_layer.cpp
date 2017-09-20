@@ -14,11 +14,6 @@
 #include "caffe/test/test_caffe_main.hpp"
 #include "caffe/test/test_gradient_check_util.hpp"
 
-#if _WIN32
-#include <windows.h>
-#else
-#include <sys/stat.h>
-#endif
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -78,20 +73,20 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
 
   //test stats
 #if _WIN32
-  CreateDirectory("caffe_ConvUnitTest", NULL);
+  CreateDirectory("caffeUnitTest-GDF/convUnitTest", NULL);
 #else
   struct stat st = {0};
-  if (stat("caffe_ConvUnitTest", &st) == -1) { mkdir("caffe_ConvUnitTest", 0700); }
+  if (stat("caffeUnitTest-GDF/convUnitTest", &st) == -1) { mkdir("caffeUnitTest-GDF/convUnitTest", 0700); }
 #endif
 
   // input dump
 #if _WIN32
-  CreateDirectory("caffe_ConvUnitTest/input", NULL);
+  CreateDirectory("caffeUnitTest-GDF/convUnitTest/input", NULL);
 #else
   struct stat st_i = {0};
-  if (stat("caffe_ConvUnitTest/input", &st_i) == -1) { mkdir("caffe_ConvUnitTest/input", 0700); }
+  if (stat("caffeUnitTest-GDF/convUnitTest/input", &st_i) == -1) { mkdir("caffeUnitTest-GDF/convUnitTest/input", 0700); }
 #endif
-  char ip_fileName[1024]; sprintf(ip_fileName, "caffe_ConvUnitTest/input/caffe-conv-input-%d.f32", convTestNum);
+  char ip_fileName[1024]; sprintf(ip_fileName, "caffeUnitTest-GDF/convUnitTest/input/caffe-conv-input-%d.f32", convTestNum);
   FILE * fp_i = fopen(ip_fileName, "wb");
   if(fp_i == NULL){printf("ERROR:: unable to create file %s", ip_fileName);}
   fwrite(in, sizeof(float), in[0].count(), fp_i);
@@ -114,12 +109,12 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
 
   // weight dump
 #if _WIN32
-  CreateDirectory("caffe_ConvUnitTest/weights", NULL);
+  CreateDirectory("caffeUnitTest-GDF/convUnitTest/weights", NULL);
 #else
   struct stat st_w = {0};
-  if (stat("caffe_ConvUnitTest/weights", &st_w) == -1) { mkdir("caffe_ConvUnitTest/weights", 0700); }
+  if (stat("caffeUnitTest-GDF/convUnitTest/weights", &st_w) == -1) { mkdir("caffeUnitTest-GDF/convUnitTest/weights", 0700); }
 #endif
-  char w_fileName[1024]; sprintf(w_fileName, "caffe_ConvUnitTest/weights/caffe-conv-weight-%d.f32", convTestNum);
+  char w_fileName[1024]; sprintf(w_fileName, "caffeUnitTest-GDF/convUnitTest/weights/caffe-conv-weight-%d.f32", convTestNum);
   FILE * fp_w = fopen(w_fileName, "wb");
   if(fp_w == NULL){printf("ERROR:: unable to create file %s", w_fileName);}
   fwrite(weight_data, sizeof(float),  weights_dump_size, fp_w);
@@ -128,12 +123,12 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
 
   // bias dump
 #if _WIN32
-  CreateDirectory("caffe_ConvUnitTest/bias", NULL);
+  CreateDirectory("caffeUnitTest-GDF/convUnitTest/bias", NULL);
 #else
   struct stat st_b = {0};
-  if (stat("caffe_ConvUnitTest/bias", &st_b) == -1) { mkdir("caffe_ConvUnitTest/bias", 0700); }
+  if (stat("caffeUnitTest-GDF/convUnitTest/bias", &st_b) == -1) { mkdir("caffeUnitTest-GDF/convUnitTest/bias", 0700); }
 #endif
-  char b_fileName[1024]; sprintf(b_fileName, "caffe_ConvUnitTest/bias/caffe-conv-bias-%d.f32", convTestNum);
+  char b_fileName[1024]; sprintf(b_fileName, "caffeUnitTest-GDF/convUnitTest/bias/caffe-conv-bias-%d.f32", convTestNum);
   FILE * fp_b = fopen(b_fileName, "wb");
   if(fp_b == NULL){printf("ERROR:: unable to create file %s", b_fileName);}
   fwrite(bias_data, sizeof(float),k, fp_b);
@@ -141,7 +136,7 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
   fclose(fp_b);
 
   // dump GDF
-  char gdf_fileName[1024]; sprintf(gdf_fileName, "caffe_ConvUnitTest/caffeConvUnitTest-%d.gdf", convTestNum);
+  char gdf_fileName[1024]; sprintf(gdf_fileName, "caffeUnitTest-GDF/convUnitTest/caffeConvUnitTest-%d.gdf", convTestNum);
   std::ofstream ofsGDF(gdf_fileName, std::ios::binary);
   ofsGDF << "import vx_nn" << std::endl;
   ofsGDF << std::endl;
@@ -249,12 +244,12 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
 
   // output dump
 #if _WIN32
-  CreateDirectory("caffe_ConvUnitTest/output", NULL);
+  CreateDirectory("caffeUnitTest-GDF/convUnitTest/output", NULL);
 #else
   struct stat st_o = {0};
-  if (stat("caffe_ConvUnitTest/output", &st_o) == -1) { mkdir("caffe_ConvUnitTest/output", 0700); }
+  if (stat("caffeUnitTest-GDF/convUnitTest/output", &st_o) == -1) { mkdir("caffeUnitTest-GDF/convUnitTest/output", 0700); }
 #endif
-  char op_fileName[1024]; sprintf(op_fileName, "caffe_ConvUnitTest/output/caffe-conv-output-%d.f32", convTestNum);
+  char op_fileName[1024]; sprintf(op_fileName, "caffeUnitTest-GDF/convUnitTest/output/caffe-conv-output-%d.f32", convTestNum);
   FILE * fp_o = fopen(op_fileName, "wb");
   if(fp_o == NULL){printf("ERROR:: unable to create file %s", op_fileName);}
   fwrite(out, sizeof(float), out[0].count(), fp_o);

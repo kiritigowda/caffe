@@ -4022,6 +4022,13 @@ void PrettyUnitTestResultPrinter::OnTestIterationStart(
 
   const char* const filter = GTEST_FLAG(filter).c_str();
 
+#if _WIN32
+  CreateDirectory("caffeUnitTest-GDF", NULL);
+#else
+  struct stat st = {0};
+  if (stat("caffeUnitTest-GDF", &st) == -1) { mkdir("caffeUnitTest-GDF", 0700); }
+#endif
+
   // Prints the filter if it's not *.  This reminds the user that some
   // tests may be skipped.
   if (!internal::String::CStringEquals(filter, kUniversalFilter)) {
