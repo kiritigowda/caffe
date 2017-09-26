@@ -326,7 +326,7 @@ int test() {
       //print labels
       char * line = NULL;
       size_t len = 0;
-      FILE * fp_l = fopen("labels.txt", "r");
+      FILE * fp_l = fopen("labels/labels.txt", "r");
       if(fp_l == NULL){printf("CAFFE Label.txt file missing\n");}
 
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
