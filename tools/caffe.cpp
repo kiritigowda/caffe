@@ -311,16 +311,16 @@ int test() {
     loss += iter_loss;
     int idx = 0;
 
-    FILE * fp_b = fopen("caffeBufferDump/caffe-output.f32", "wb");
-    if(fp_b == NULL){printf("ERROR:: unable to create file caffe-output.f32");}
-
     for (int j = 0; j < result.size(); ++j) {
       const float* result_vec = result[j]->cpu_data();
 
-      if(j == 1)
+      if(j == 0)
       {
+          FILE * fp_b = fopen("caffeBufferDump/caffe-output.f32", "wb");
+          if(fp_b == NULL){printf("ERROR:: unable to create file caffe-output.f32");}
           fwrite(result_vec, sizeof(float), result[j]->count(), fp_b);
           printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/caffe-output.f32\n", result[j]->count());
+          fclose(fp_b);
       }    
 
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
@@ -333,10 +333,10 @@ int test() {
         }
         const std::string& output_name = caffe_net.blob_names()[
             caffe_net.output_blob_indices()[j]];
-        LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
+        //LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
       }
     }
-    fclose(fp_b);
+    
   }
 
   loss /= FLAGS_iterations;
@@ -352,7 +352,7 @@ int test() {
       loss_msg_stream << " (* " << loss_weight
                       << " = " << loss_weight * mean_score << " loss)";
     }
-    LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
+    //LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
   }
 
   return 0;
