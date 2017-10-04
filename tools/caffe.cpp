@@ -323,12 +323,6 @@ int test() {
           printf("CAFFE OUTPUT DUMP: WRITING %d entries in caffeBufferDump/caffe-output.f32\n", result[j]->count());
       }    
 
-      //print labels
-      char * line = NULL;
-      size_t len = 0;
-      FILE * fp_l = fopen("labels/labels.txt", "r");
-      if(fp_l == NULL){printf("CAFFE Label.txt file missing\n");}
-
       for (int k = 0; k < result[j]->count(); ++k, ++idx) {
         const float score = result_vec[k];
         if (i == 0) {
@@ -339,14 +333,8 @@ int test() {
         }
         const std::string& output_name = caffe_net.blob_names()[
             caffe_net.output_blob_indices()[j]];
-        //LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
-        
-        if( (fp_l != NULL) && (getline(&line, &len, fp_l) != -1) ) {
-          if(score >= 0.01)
-            printf("Output Classification -- %.4f percent -- %s ",score*100, line);
-        }
+        LOG(INFO) << "Batch " << i << ", " << output_name << " = " << score;
       }
-      fclose(fp_l);
     }
     fclose(fp_b);
   }
@@ -364,7 +352,7 @@ int test() {
       loss_msg_stream << " (* " << loss_weight
                       << " = " << loss_weight * mean_score << " loss)";
     }
-    //LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
+    LOG(INFO) << output_name << " = " << mean_score << loss_msg_stream.str();
   }
 
   return 0;
