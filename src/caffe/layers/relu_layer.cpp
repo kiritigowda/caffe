@@ -47,7 +47,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 if (stat("caffeBufferDump", &st) == -1) { mkdir("caffeBufferDump", 0700); }
 #endif
 //if(this->layer_param().name() == "relu1_1")
-  caffe_test_dumpBuffer_relu(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
+  caffe_test_dumpBuffer(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
 #endif
 }
 

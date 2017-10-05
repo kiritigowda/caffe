@@ -11,13 +11,17 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/math_functions.hpp"
 
-#define CAFFE_BUFFER_DUMP 0
+#define CAFFE_BUFFER_DUMP 1
 #if _WIN32
 #include <windows.h>
 #else
 #include <sys/stat.h>
 #endif
 
+#if CAFFE_BUFFER_DUMP
+// decalre
+void caffe_test_dumpBuffer(const void* buf, size_t numElements, std::string layername, std::string path);
+#endif
 /**
  Forward declare boost::thread instead of including boost/thread.hpp
  to avoid a boost/NVCC issues (#1009, #1010) on OSX.

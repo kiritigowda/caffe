@@ -4,6 +4,29 @@
 #include "caffe/layers/batch_norm_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
+#if CAFFE_BUFFER_DUMP
+void caffe_test_dumpBuffer(const void* buf, size_t numElements, std::string layername, std::string path)
+{
+    // Replace '/' to '_' in the layername
+    std::string fileName = layername;
+    size_t start_pos = 0;
+    while ((start_pos = fileName.find("/", start_pos)) != std::string::npos) {
+        fileName.replace(start_pos, 1, "_");
+        start_pos += 1; // Handles case where 'to' is a substring of 'from'
+    }
+    fileName = path + fileName + ".f32";
+    printf("CAFFE dumpbuffer for layer %s into file %s%s with %d elements\n", layername.c_str(), path.c_str(), fileName.c_str(), (int)numElements);
+
+    FILE * fp = fopen(fileName.c_str(), "wb");
+    if(!fp) printf("Could not open file %s\n", fileName.c_str());
+    else
+    {
+        fwrite(buf, sizeof(float), numElements, fp);
+    }
+    fclose(fp);
+}
+#endif
+
 namespace caffe {
 
 template <typename Dtype>
@@ -163,6 +186,11 @@ void BatchNormLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   //                 might clobber the data.  Can we skip this if they won't?
   caffe_copy(x_norm_.count(), top_data,
       x_norm_.mutable_cpu_data());
+/*DUMP LAYER BUFFER*/
+#if CAFFE_BUFFER_DUMP
+    caffe_test_dumpBuffer(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
+#endif
+
 }
 
 template <typename Dtype>

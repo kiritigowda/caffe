@@ -139,6 +139,11 @@ void ScaleLayer<Dtype>::Forward_cpu(
   if (bias_layer_) {
     bias_layer_->Forward(bias_bottom_vec_, top);
   }
+  /*DUMP LAYER BUFFER*/
+#if CAFFE_BUFFER_DUMP
+    caffe_test_dumpBuffer(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
+#endif
+
 }
 
 template <typename Dtype>

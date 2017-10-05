@@ -4,28 +4,6 @@
 #include "caffe/layers/inner_product_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
-void caffe_test_dumpBuffer_inner_product(void* buf, size_t numElements, std::string layername, std::string path)
-{
-    // Replace '/' to '_' in the layername
-    std::string fileName = layername;
-    size_t start_pos = 0;
-    while ((start_pos = fileName.find("/", start_pos)) != std::string::npos) {
-        fileName.replace(start_pos, 1, "_");
-        start_pos += 1; // Handles case where 'to' is a substring of 'from'
-    }
-    fileName = path + fileName + ".f32";
-    printf("CAFFE INNER_PRODUCT WRITE: Writing file %s with %d elements\n", fileName.c_str(), (int)numElements);
-
-    FILE * fp = fopen(fileName.c_str(), "wb");
-    if(!fp) printf("Could not open file %s\n", fileName.c_str());
-    else
-    {
-        printf("CAFFE INNER_PRODUCT WRITE: Writing file %s into caffeBufferDump folder\n", fileName.c_str());
-        fwrite(buf, sizeof(float), numElements, fp);
-    }
-    fclose(fp);
-}
-
 namespace caffe {
 
 template <typename Dtype>
@@ -125,7 +103,7 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 if (stat("caffeBufferDump", &st) == -1) { mkdir("caffeBufferDump", 0700); }
 #endif
 //if(this->layer_param().name() == "fc6")
-  caffe_test_dumpBuffer_inner_product(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
+  caffe_test_dumpBuffer(top[0]->mutable_cpu_data(), top[0]->count(), this->layer_param().name(), "caffeBufferDump/");
 #endif
 }
 
